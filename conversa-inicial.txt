@@ -1,0 +1,125 @@
+A diferença fundamental: Nível 3 vs Nível 2
+Para deixar a distinção perfeita, baseada na nossa conversa:
+No Nível 2 (Headless): Você abre um projeto em branco no seu editor de código (um Create React App, por exemplo). Você tem 100% de liberdade visual, mas o grande problema é: você precisa construir o player de vídeo do zero. Lidar com troca de áudio dublado/legendado, sincronia de legendas e criar compatibilidade com Chromecast no seu próprio código é uma tarefa colossal.
+No Nível 3 (Fork do jellyfin-web): Você não começa do zero. Você baixa o aplicativo inteiro que a equipe do Jellyfin já construiu. A grande vantagem é que você herda o player de vídeo hiper-avançado deles e toda a infraestrutura complexa. O seu trabalho não é criar a roda, é entrar no motor deles e "mexer nas engrenagens": adicionar botões que não existiam, mudar a lógica de como os filmes são exibidos ou forçar comportamentos específicos.
+O que posso fazer no Nível 3 que não poderia (ou seria muito difícil) no Nível 2?
+Aqui estão exemplos reais de comportamentos internos que você pode alterar no código do Jellyfin (Nível 3), o que seria um pesadelo fazer do zero no Nível 2:
+Adicionar um botão de "Reportar Erro" ou "Pedir Filme": Você pode injetar um botão nativo na interface do player ou na página do filme que, quando clicado, dispara um webhook (para o seu Discord ou Telegram) avisando: "O usuário X avisou que o filme Y está sem áudio" ou "O usuário solicitou a adição do filme Z".
+Modificar a lógica do Player (Auto-Skip): Você pode entrar no código em JavaScript do player do Jellyfin e criar uma lógica interna: "Se o vídeo chegar a 90% da duração, pule automaticamente para o próximo episódio sem perguntar", imitando perfeitamente o comportamento agressivo da Netflix.
+Travar resoluções e bitrates: No Nível 2, se você errar a chamada da API, o servidor tenta enviar um filme 4K e trava o celular do usuário. No Nível 3, você pode alterar o código-fonte do menu de qualidades para remover as opções 4K e 1080p, forçando o aplicativo inteiro a rodar no máximo em 720p para economizar o processamento do seu computador.
+Criar abas customizadas na tela inicial: Em vez de apenas "Filmes" e "Séries", você pode alterar o código para criar uma aba "Lançamentos da Semana", consumindo uma API externa (como o TMDb) cruzando com o que você tem no servidor.
+Passo a Passo Detalhado do Nível 3 (Hackeando o Comportamento)
+Aqui está como você entra no código e faz essas alterações funcionais.
+Passo 1: Configurar o ambiente de desenvolvimento
+Você precisa do servidor Jellyfin rodando (onde estão seus arquivos) e o Node.js instalado no seu computador.
+Abra o terminal e digite:
+code
+Bash
+git clone https://github.com/jellyfin/jellyfin-web.git
+cd jellyfin-web
+npm install
+npm start
+Isso vai abrir o projeto no seu navegador rodando localmente (geralmente http://localhost:8080).
+Passo 2: Entendendo a arquitetura deles
+Abra a pasta jellyfin-web em um editor de código (como o VS Code). A base de código deles mistura JavaScript puro antigo com componentes modernos (React/Vue).
+Tudo de importante acontece na pasta src.
+src/components/: Onde estão os pedaços da interface (botões, menus, player).
+src/controllers/: Onde fica a lógica do que acontece em cada página (ex: a página de detalhes de um filme).
+src/scripts/: A "cola" que liga o aplicativo ao servidor.
+Passo 3: Exemplo Prático - Adicionando um Botão Customizado
+Vamos supor que você queira adicionar um botão de "Trailer no YouTube" ao lado do botão "Reproduzir" na página do filme.
+Vá até src/controllers/item/item.js (ou equivalente na versão mais recente, pois a estrutura de pastas evolui, procure pelos arquivos que controlam a itemDetailPage).
+Lá, você encontrará a lógica que renderiza a página do filme. Você pode injetar seu próprio HTML/JavaScript.
+Você busca no objeto do filme (que o Jellyfin já carregou da API) o nome original dele.
+Você adiciona um botão no código (via manipulação de DOM ou componente React) com um link: https://www.youtube.com/results?search_query=Trailer+${nomeDoFilme}.
+Quando você salva o arquivo, o navegador atualiza sozinho e o botão passa a existir nativamente para qualquer filme na sua plataforma.
+Passo 4: Exemplo Prático - Alterando Lógica (Bloquear Download)
+Se você não quer que os usuários possam baixar o arquivo físico do filme:
+Vá no arquivo que gerencia as permissões dos itens (busque por termos como canDownload em src/scripts/ ou src/components/).
+A lógica original consulta o servidor: "Esse usuário tem permissão para baixar?".
+Você simplesmente altera o código para sempre retornar false, ignorando o que o servidor disser.
+code
+JavaScript
+// Código original: return item.CanDownload && user.Policy.EnableContentDownloading;
+// Seu código (Nível 3 - Hackeado):
+return false; // Ninguém baixa nada na minha plataforma.
+Passo 5: Compilando a sua versão
+Depois de adicionar seus botões e alterar as lógicas que você queria, você precisa gerar a versão final para publicar.
+No terminal, digite:
+code
+Bash
+npm run build:production
+Isso vai gerar uma pasta chamada dist dentro do seu projeto. Essa pasta contém o código final modificado (HTML, JS, CSS empacotados).
+Passo 6: Implantando (Substituindo o original)
+Vá até o local onde o Jellyfin foi instalado no seu computador/servidor (no Linux geralmente em /usr/share/jellyfin/web/, no Windows em C:\Program Files\Jellyfin\Server\jellyfin-web).
+Faça um backup da pasta web original.
+Cole todo o conteúdo da sua pasta dist lá dentro.
+Recarregue a página (limpe o cache do navegador).
+Pronto! Agora, qualquer dispositivo que acessar o seu Jellyfin não estará mais acessando o cliente padrão, mas sim o seu código modificado (Fork), com as suas lógicas de player, seus botões de redirecionamento e as travas que você programou.
+
+Como o seu servidor terá um propósito duplo — servir como uma plataforma de entretenimento (filmes comerciais) e como uma ferramenta de trabalho para uma produtora (arquivos brutos, cortes e dailies) —, as necessidades do seu player mudam drasticamente. Você precisará de ferramentas estilo Netflix para o entretenimento, mas ferramentas estilo Frame.io ou Vimeo Pro para a produtora.
+Como você está no "Nível 3" (modificando o código do Jellyfin e seu ecossistema), aqui estão 50 ferramentas, funcionalidades e integrações que você pode adicionar, programar ou plugar no seu sistema, divididas por categorias:
+🎬 Controles Avançados do Player (Frontend / Nível 3)
+Para arquivos de produtora, o player padrão não basta. Você precisa programar no código do frontend (Video.js do Jellyfin) essas funcionalidades:
+Avanço Frame a Frame: Atalhos no teclado (setas esquerda/direita) para avançar exatamente 1 frame por vez para análise de corte.
+Display de Timecode SMPTE: Mudar o relógio do player de 01:15 para o padrão de ilha de edição 00:01:15:24 (Horas:Min:Seg:Frames).
+Marcadores de Timeline: Permitir que o editor adicione "pontos" coloridos na barra de progresso indicando o início de novas cenas ou erros.
+Controle de Velocidade com Pitch Correction: Botões de 0.5x, 1.5x e 2x de velocidade sem distorcer o áudio (efeito esquilo).
+Zoom e Pan no Vídeo: Botão para dar zoom na imagem durante o play para checar foco ou detalhes da maquiagem no set.
+A/B Looping: Selecionar um ponto A e um ponto B para o player ficar repetindo aquele trecho infinitamente (ótimo para analisar transições).
+Toggle de LUT (Look-Up Table): Um botão que aplica correção de cor básica no player caso o vídeo upado esteja em formato "Flat/RAW" (ex: S-Log da Sony).
+Seletor de Canal de Áudio: Isolar trilhas de áudio (ex: ouvir apenas o canal do microfone de lapela e mutar o som ambiente).
+Área de Segurança (Safe Margins): Um botão que desenha linhas na tela mostrando os limites de corte para TV e redes sociais (9:16, 4:3).
+Visualizador de Waveform: Uma pequena janela sobreposta que mostra as ondas de áudio do arquivo.
+💬 Ferramentas de Revisão e Colaboração (Estilo Frame.io)
+Se a sua produtora vai aprovar vídeos por lá, você pode injetar essas lógicas no código do Jellyfin:
+Comentários por Timecode: Um painel lateral onde um cliente/diretor pausa o vídeo e digita um comentário que fica fixado naquele segundo exato.
+Desenho na Tela (Annotations): Ferramenta de caneta para circular um erro (ex: "apagar este cabo de luz aqui") direto no frame.
+Empilhamento de Versões: Em vez de ter "Corte 1" e "Corte 2" espalhados, um botão no player que permite alternar entre as versões (V1, V2, Final) do mesmo vídeo.
+Status de Aprovação: Botões grandes para o cliente clicar: "Aprovado", "Requer Alterações" ou "Rejeitado".
+Exportação de Comentários para Premiere/DaVinci: Um script que baixa os comentários do seu player em um arquivo .xml ou .csv para importar direto na ilha de edição.
+Menções (@usuário): Sistema de notificação (via webhooks) que avisa o colorista ou editor no Discord quando ele é marcado em um comentário.
+Dicionário de Dailies: Organizar os vídeos brutos do dia por "Cena", "Plano" e "Take", simulando uma claquete digital.
+🔒 Segurança e Controle de Acesso (Crucial para Produtoras)
+Filmes da produtora antes do lançamento precisam de segurança militar contra vazamentos.
+Marca d'água Forense Dinâmica: Programar o player para imprimir sutilmente (ou bem grande) o E-mail e o IP do usuário que está assistindo por cima do vídeo em tempo real.
+Links com Data de Validade: Criar uma tela onde você gera um link de um corte para o cliente que se autodestrói em 48 horas.
+Tela de NDA (Acordo de Confidencialidade): Uma janela que obriga o usuário a clicar em "Eu Aceito os Termos" antes de o vídeo dar Play em materiais confidenciais.
+Bloqueio de Download: Desativar totalmente o botão de download ou o "Salvar como" no clique com o botão direito para pastas da produtora.
+Log de Auditoria de Playback: Uma página no painel de admin que mostra que horas o usuário X deu play, se pulou partes do vídeo e quanto tempo assistiu.
+Restrição por IP Geográfico: Bloquear automaticamente acessos aos projetos não lançados se a conexão não vier do IP do escritório.
+Acesso "Guest/Convidado" Simplificado: Um tipo de login que não mostra os "Vingadores" da sua biblioteca pessoal, abrindo direto na pasta do projeto do cliente.
+⚙️ Engenharia por Trás do Player (FFmpeg e Backend)
+Para o player rodar liso arquivos pesados da produtora e filmes comerciais.
+Geração Automática de Proxies: Configurar o servidor para que, ao receber um arquivo pesado (.R3D, ProRes 4K), ele crie uma versão leve em H.264 para o player web não travar.
+Burn-in de Timecode no Servidor: Um comando FFmpeg que "queima" o timecode permanentemente na imagem dos arquivos da pasta de Dailies.
+Detecção Inteligente de "Pular Abertura": Usar scripts que analisam áudio e criam automaticamente o botão de pular a introdução para suas séries comerciais.
+Mapeamento de Tons HDR para SDR: Garantir que filmes modernos em HDR não fiquem com as cores "lavadas" ao serem reproduzidos em monitores comuns da produtora.
+Perfis de Bitrate Customizados: Criar botões de qualidade específicos ("Qualidade de Revisão - 2Mbps" vs "Qualidade de Exibição Final - 20Mbps").
+Watch Folders de Render: Integração onde qualquer vídeo exportado pela ilha de edição para uma pasta no servidor entra automaticamente no player.
+🤖 Automação e Inteligência Artificial (Integrações Externas)
+Scripts e APIs que você conecta ao seu servidor para enriquecer o player.
+Whisper AI (OpenAI): Um script de fundo que gera legendas .srt automaticamente de entrevistas e documentários brutos assim que chegam no servidor.
+TMDb / OMDb API: Para baixar posters, notas e sinopses automáticas apenas para a biblioteca de entretenimento.
+Identificação de Atores via Rosto: Plugar uma API de visão computacional que detecta quem está na tela num dado momento para categorizar os arquivos brutos.
+Gerador Automático de Capas/Thumbnails: Para vídeos da produtora, um script que escolhe o frame mais nítido ou iluminado no meio do vídeo como capa.
+Extração de Metadados EXIF: Mostrar na página do vídeo com qual câmera ele foi gravado, FPS e ISO (lendo direto do arquivo bruto).
+🧩 Ecossistema e Aplicativos de Apoio (Servarr & Comunidade)
+Softwares que rodam no mesmo servidor que o seu e se integram ao seu player.
+Tdarr: Software que escaneia sua biblioteca e re-codifica automaticamente arquivos gigantes de entretenimento para o formato HEVC/H.265, economizando HD.
+Jellyseerr (Overseerr): Um portal (estilo lojinha) onde seus amigos ou equipe entram e clicam em "Pedir Filme". Ele baixa e joga no seu player sozinho.
+Radarr: Gerenciador focado na biblioteca comercial que busca filmes com base nas listas que você quer, organiza as pastas e renomeia.
+Sonarr: O equivalente ao Radarr, mas para automatizar as temporadas da sua biblioteca de séries.
+Bazarr: Fica rodando no fundo buscando e baixando legendas sincronizadas (PT-BR) para todos os filmes não-nacionais.
+Tautulli / Jellystat: Painel gráfico bonito mostrando estatísticas de quais clientes/amigos assistem mais, quais as horas de pico, etc.
+FileFlows: Cria um mapa visual (em nós) dizendo: "Se o vídeo cair na pasta X, diminua a resolução, converta pra MP4 e coloque no player".
+Rclone: Permite montar seus Google Drives corporativos como se fossem HDs locais, alimentando o player sem ocupar seu HD físico.
+🎨 Personalização de Interface Visual (UI/UX)
+Alterações diretas no seu Fork do Nível 3 para agradar clientes e equipe.
+Separação Rígida de Bibliotecas no Frontend: Programar a tela inicial para exigir um clique do usuário logo no início: "Entrar como Produtora" ou "Entrar no Cinema (Entretenimento)".
+Identidade Visual por Projeto: Se a produtora estiver atendendo a Coca-Cola, a pasta daquele cliente muda a cor do player de roxo para vermelho com a logo da marca.
+Botão de "Download Proxy": Adicionar ao lado de filmes brutos um botão para o editor da equipe baixar a versão leve (H.264) em vez do arquivo original pesado.
+Carrossel de Cenas Automático: Passar o mouse em cima da thumbnail de um vídeo e ele rodar uma pequena preview sem som em loop (como o YouTube faz).
+Tema Dark/Light Automático: Respeitar as configurações do sistema do sistema operacional do cliente.
+Página de Apresentação de Elenco (Casting): Modificar a tela de atores para a produtora; em vez de puxar do TMDb, ela puxa do banco de dados do seu próprio casting de atores locais.
+Player Splash Screen Personalizada: Antes do vídeo da produtora começar, forçar a exibição de uma vinheta de 3 segundos da sua empresa rolando de forma nativa via código antes de unir com o vídeo principal.

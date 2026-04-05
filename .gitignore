@@ -1,0 +1,46 @@
+# Dependencies
+node_modules/
+jellyfin-web/node_modules/
+
+# Build output
+jellyfin-web/dist/
+build/
+
+# Environment
+.env
+.env.local
+.env.*.local
+
+# IDE
+.vscode/
+.idea/
+*.swp
+*.swo
+
+# OS
+Thumbs.db
+Desktop.ini
+.DS_Store
+
+# Config secrets
+config/*/api_key*
+config/*/config.xml
+
+# Logs
+*.log
+logs/
+
+# Python
+__pycache__/
+*.pyc
+venv/
+.venv/
+
+# Media (don't commit actual media files)
+media/
+*.mkv
+*.mp4
+*.avi
+*.mov
+*.r3d
+*.braw
