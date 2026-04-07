@@ -64,7 +64,14 @@ const config = {
             __PACKAGE_JSON_NAME__: JSON.stringify(packageJson.name),
             __PACKAGE_JSON_VERSION__: JSON.stringify(packageJson.version),
             __USE_SYSTEM_FONTS__: !!JSON.parse(process.env.USE_SYSTEM_FONTS || '0'),
-            __WEBPACK_SERVE__: !!JSON.parse(process.env.WEBPACK_SERVE || '0')
+            __WEBPACK_SERVE__: !!JSON.parse(process.env.WEBPACK_SERVE || '0'),
+            'process.env.FIREBASE_API_KEY': JSON.stringify(process.env.FIREBASE_API_KEY || ''),
+            'process.env.FIREBASE_AUTH_DOMAIN': JSON.stringify(process.env.FIREBASE_AUTH_DOMAIN || ''),
+            'process.env.FIREBASE_PROJECT_ID': JSON.stringify(process.env.FIREBASE_PROJECT_ID || ''),
+            'process.env.FIREBASE_STORAGE_BUCKET': JSON.stringify(process.env.FIREBASE_STORAGE_BUCKET || ''),
+            'process.env.FIREBASE_MESSAGING_SENDER_ID': JSON.stringify(process.env.FIREBASE_MESSAGING_SENDER_ID || ''),
+            'process.env.FIREBASE_APP_ID': JSON.stringify(process.env.FIREBASE_APP_ID || ''),
+            'process.env.FIREBASE_MEASUREMENT_ID': JSON.stringify(process.env.FIREBASE_MEASUREMENT_ID || '')
         }),
         new CleanWebpackPlugin(),
         new HtmlWebpackPlugin({

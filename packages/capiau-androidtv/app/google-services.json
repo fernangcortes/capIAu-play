@@ -1,0 +1,23 @@
+{
+  "project_info": {
+    "project_number": "187412158747",
+    "project_id": "capiau-streaming",
+    "storage_bucket": "capiau-streaming.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:187412158747:android:REPLACE_WITH_REAL_APP_ID",
+        "android_client_info": {
+          "package_name": "com.capiau.streaming.tv"
+        }
+      },
+      "api_key": [
+        {
+          "current_key": "AIzaSyAyPThuxd0QAk3zVrHmxmk3k3eVA88vZ60"
+        }
+      ]
+    }
+  ],
+  "configuration_version": "1"
+}

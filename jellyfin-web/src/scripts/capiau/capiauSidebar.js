@@ -1,7 +1,11 @@
 /**
  * CapIAu Sidebar — Painel Retráctil da Produtora
  * Injeta um botão fixo e um painel lateral deslizante em todas as páginas.
+ * 
+ * v2.0 — Responsivo: Mobile (bottom-sheet) + TV (D-pad, fontes grandes) + Desktop (sidebar lateral)
  */
+
+import { capiauDevice } from './capiauDeviceManager';
 
 let sidebarInjected = false;
 let sidebarOpen = false;
@@ -13,6 +17,7 @@ export function initCapIAuSidebar() {
     injectStyles();
     injectSidebarDOM();
     bindToggle();
+    bindTouchGestures();
 }
 
 function injectStyles() {
@@ -20,6 +25,7 @@ function injectStyles() {
     const style = document.createElement('style');
     style.id = 'capiau-sidebar-styles';
     style.textContent = `
+        /* ===== FAB BUTTON ===== */
         #capiau-fab {
             position: fixed;
             bottom: 24px;
@@ -47,7 +53,14 @@ function injectStyles() {
             background: linear-gradient(135deg, #444, #222);
             box-shadow: 0 4px 15px rgba(0,0,0,0.5);
         }
+        /* Focus indicator for TV */
+        #capiau-fab:focus-visible {
+            outline: 3px solid #e50914;
+            outline-offset: 3px;
+            box-shadow: 0 0 20px rgba(229,9,20,0.6);
+        }
 
+        /* ===== SIDEBAR PANEL ===== */
         #capiau-sidebar {
             position: fixed;
             top: 0;
@@ -68,6 +81,23 @@ function injectStyles() {
             right: 0;
         }
 
+        /* ===== OVERLAY (Mobile) ===== */
+        #capiau-overlay {
+            position: fixed;
+            top: 0; left: 0;
+            width: 100%; height: 100%;
+            background: rgba(0,0,0,0.5);
+            z-index: 9998;
+            opacity: 0;
+            pointer-events: none;
+            transition: opacity 0.3s;
+        }
+        #capiau-overlay.is-visible {
+            opacity: 1;
+            pointer-events: auto;
+        }
+
+        /* ===== HEADER ===== */
         #capiau-sidebar-header {
             display: flex;
             align-items: center;
@@ -92,6 +122,7 @@ function injectStyles() {
             letter-spacing: 1px;
         }
 
+        /* ===== TABS ===== */
         #capiau-sidebar-tabs {
             display: flex;
             border-bottom: 1px solid #2a2a2a;
@@ -119,7 +150,13 @@ function injectStyles() {
             color: #fff;
             background: rgba(255,255,255,0.04);
         }
+        .capiau-stab:focus-visible {
+            outline: 2px solid #e50914;
+            outline-offset: -2px;
+            color: #fff;
+        }
 
+        /* ===== BODY ===== */
         #capiau-sidebar-body {
             flex: 1;
             overflow-y: auto;
@@ -129,6 +166,7 @@ function injectStyles() {
         #capiau-sidebar-body::-webkit-scrollbar-track { background: #111; }
         #capiau-sidebar-body::-webkit-scrollbar-thumb { background: #333; border-radius: 2px; }
 
+        /* ===== MOVIE GROUP ===== */
         .capiau-movie-group {
             margin-bottom: 16px;
         }
@@ -156,6 +194,7 @@ function injectStyles() {
             color: #666;
         }
 
+        /* ===== NOTE CARDS ===== */
         .capiau-note-card {
             background: rgba(255,255,255,0.04);
             border: 1px solid rgba(255,255,255,0.08);
@@ -172,6 +211,13 @@ function injectStyles() {
             background: rgba(229,9,20,0.08);
             border-color: rgba(229,9,20,0.3);
             transform: translateX(-2px);
+        }
+        .capiau-note-card:focus-visible {
+            outline: 2px solid #e50914;
+            outline-offset: 2px;
+            background: rgba(229,9,20,0.12);
+            border-color: #e50914;
+            transform: scale(1.01);
         }
         .capiau-note-badge {
             width: 6px;
@@ -212,6 +258,10 @@ function injectStyles() {
         .capiau-note-time:hover {
             background: rgba(229,9,20,0.4);
         }
+        .capiau-note-time:focus-visible {
+            outline: 2px solid #e50914;
+            background: rgba(229,9,20,0.5);
+        }
 
         .capiau-empty {
             text-align: center;
@@ -245,6 +295,8 @@ function injectStyles() {
             border-color: #e50914;
             color: #fff;
         }
+
+        /* ===== MINIPLAYER ===== */
         .capiau-miniplayer {
             position: fixed;
             width: 240px;
@@ -258,73 +310,357 @@ function injectStyles() {
             overflow: hidden;
             display: none;
         }
+
         .capiau-reply-list { margin-top: 4px; padding-left: 6px; border-left: 1px dashed rgba(255,255,255,0.1); }
         .capiau-reply-box { margin-top: 4px; }
         .capiau-reply-box textarea {
             width: 100%; height: 30px; background: #222; color: #fff; 
             border: 1px solid #444; border-radius: 3px; padding: 4px; resize: none; font-size: 10px;
         }
+
+        /* ===== DRAG HANDLE (mobile bottom-sheet) ===== */
+        .capiau-drag-handle {
+            display: none;
+            width: 36px;
+            height: 4px;
+            background: #555;
+            border-radius: 2px;
+            margin: 8px auto 4px;
+        }
+
+        /* ================================================================
+           RESPONSIVE: MOBILE (< 768px) — Bottom Sheet
+           ================================================================ */
+        @media (max-width: 767px) {
+            #capiau-fab {
+                width: 56px;
+                height: 56px;
+                font-size: 22px;
+                bottom: calc(24px + env(safe-area-inset-bottom, 0px));
+                right: 16px;
+            }
+
+            #capiau-sidebar {
+                top: auto;
+                bottom: 0;
+                right: 0;
+                left: 0;
+                width: 100%;
+                max-width: 100%;
+                height: 80vh;
+                max-height: 80vh;
+                border-radius: 16px 16px 0 0;
+                border-left: none;
+                border-top: 1px solid #333;
+                transform: translateY(100%);
+                transition: transform 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+            }
+            #capiau-sidebar.is-open {
+                right: 0;
+                transform: translateY(0);
+            }
+
+            .capiau-drag-handle {
+                display: block;
+            }
+
+            #capiau-sidebar-header h2 {
+                font-size: 15px;
+            }
+
+            .capiau-stab {
+                font-size: 11px;
+                padding: 10px 6px;
+            }
+
+            .capiau-note-card {
+                padding: 12px;
+            }
+            .capiau-note-text {
+                font-size: 13px;
+            }
+            .capiau-note-author,
+            .capiau-note-time {
+                font-size: 12px;
+            }
+            .capiau-movie-name {
+                font-size: 14px;
+            }
+
+            /* Miniplayer inline no mobile */
+            .capiau-miniplayer {
+                position: relative !important;
+                width: 100% !important;
+                height: 180px !important;
+                top: auto !important;
+                left: auto !important;
+                border-radius: 8px;
+                margin-bottom: 8px;
+            }
+
+            .capiau-reply-box textarea {
+                height: 40px;
+                font-size: 14px;
+            }
+
+            #capiau-sidebar-body {
+                padding: 12px 16px;
+                padding-bottom: calc(12px + env(safe-area-inset-bottom, 0px));
+            }
+        }
+
+        /* ================================================================
+           RESPONSIVE: TV / 10-Foot (>= 1920px)
+           ================================================================ */
+        @media (min-width: 1920px) {
+            #capiau-sidebar {
+                width: 480px;
+                right: -500px;
+            }
+            #capiau-sidebar.is-open {
+                right: 0;
+            }
+
+            #capiau-sidebar-header {
+                padding: 18px 24px 14px;
+            }
+            #capiau-sidebar-header h2 {
+                font-size: 18px;
+            }
+            #capiau-sidebar-header span {
+                font-size: 12px;
+            }
+
+            .capiau-stab {
+                font-size: 14px;
+                padding: 14px 10px;
+            }
+
+            #capiau-sidebar-body {
+                padding: 16px 20px;
+            }
+
+            .capiau-note-card {
+                padding: 16px 20px;
+                margin-bottom: 10px;
+                border-radius: 8px;
+            }
+            .capiau-note-text {
+                font-size: 16px;
+                line-height: 1.5;
+            }
+            .capiau-note-author {
+                font-size: 13px;
+            }
+            .capiau-note-time {
+                font-size: 14px;
+                padding: 4px 8px;
+            }
+
+            .capiau-movie-name {
+                font-size: 16px;
+            }
+            .capiau-movie-year {
+                font-size: 13px;
+            }
+            .capiau-movie-thumb {
+                width: 36px;
+                height: 54px;
+            }
+
+            .capiau-empty,
+            .capiau-loading {
+                font-size: 16px;
+                padding: 40px 20px;
+            }
+
+            .capiau-toggle-btn {
+                font-size: 13px;
+                padding: 6px 14px;
+            }
+
+            .capiau-reply-box textarea {
+                height: 50px;
+                font-size: 14px;
+            }
+
+            /* TV safe zone padding */
+            #capiau-fab {
+                bottom: 48px;
+                right: 48px;
+                width: 56px;
+                height: 56px;
+                font-size: 24px;
+            }
+
+            /* Miniplayer desabilitado na TV (sem hover) */
+            .capiau-miniplayer {
+                display: none !important;
+            }
+        }
+
+        /* ================================================================
+           TV-SPECIFIC: Focus indicators and D-pad support
+           ================================================================ */
+        .capiau-device-tv .capiau-note-card {
+            /* Remover hover transform na TV */
+            transform: none !important;
+        }
+        .capiau-device-tv .capiau-note-card:focus-visible {
+            outline: 3px solid #e50914;
+            outline-offset: 2px;
+            background: rgba(229,9,20,0.15);
+            border-color: #e50914;
+            box-shadow: 0 0 20px rgba(229,9,20,0.3);
+            transform: scale(1.02) !important;
+        }
+        .capiau-device-tv .capiau-stab:focus-visible {
+            outline: 3px solid #e50914;
+            outline-offset: -3px;
+            background: rgba(229,9,20,0.15);
+            color: #fff;
+        }
+        .capiau-device-tv #capiau-fab:focus-visible {
+            outline: 4px solid #e50914;
+            outline-offset: 4px;
+            transform: scale(1.15);
+        }
+
+        /* ================================================================
+           TOUCH-SPECIFIC: Larger touch targets
+           ================================================================ */
+        .capiau-device-mobile .capiau-note-card,
+        .capiau-device-tablet .capiau-note-card {
+            min-height: 48px;
+        }
+        .capiau-device-mobile .capiau-stab,
+        .capiau-device-tablet .capiau-stab {
+            min-height: 44px;
+        }
+        .capiau-device-mobile .capiau-toggle-btn,
+        .capiau-device-tablet .capiau-toggle-btn {
+            min-height: 36px;
+            padding: 6px 12px;
+        }
     `;
     document.head.appendChild(style);
 }
 
 function injectSidebarDOM() {
+    // Overlay (for mobile dimming)
+    const overlay = document.createElement('div');
+    overlay.id = 'capiau-overlay';
+    document.body.appendChild(overlay);
+
     // FAB button
     const fab = document.createElement('button');
     fab.id = 'capiau-fab';
     fab.title = 'Painel da Produtora';
     fab.innerHTML = '🎬';
+    fab.tabIndex = 0; // Focusable for TV D-pad
     document.body.appendChild(fab);
 
     // Sidebar panel
     const sidebar = document.createElement('div');
     sidebar.id = 'capiau-sidebar';
     sidebar.innerHTML = `
+        <div class="capiau-drag-handle"></div>
         <div id="capiau-sidebar-header">
             <div>
                 <span>CapIAu</span>
                 <h2>Painel da Produtora</h2>
             </div>
             <div style="display:flex;align-items:center;gap:4px;">
-                <button id="capiau-btn-collections" style="background:rgba(229,9,20,0.2);border:1px solid #e50914;color:#e50914;font-size:10px;padding:2px 6px;border-radius:3px;cursor:pointer;" title="Organizar Coleções por Metadados">🤖 Sync IA</button>
-                <button id="capiau-sidebar-close" style="background:none;border:none;color:#888;font-size:20px;cursor:pointer;padding:4px 8px;" title="Fechar">✕</button>
+                <button id="capiau-btn-collections" style="background:rgba(229,9,20,0.2);border:1px solid #e50914;color:#e50914;font-size:10px;padding:2px 6px;border-radius:3px;cursor:pointer;" title="Organizar Coleções por Metadados" tabindex="0">🤖 Sync IA</button>
+                <button id="capiau-sidebar-close" style="background:none;border:none;color:#888;font-size:20px;cursor:pointer;padding:4px 8px;" title="Fechar" tabindex="0">✕</button>
             </div>
         </div>
         <div id="capiau-sidebar-tabs">
-            <button class="capiau-stab active" data-tab="notes">📝 Anotações</button>
-            <button class="capiau-stab" data-tab="dragdrop">🗂️ Ordem</button>
-            <button class="capiau-stab" data-tab="linear">📋 Linear</button>
-            <button class="capiau-stab" data-tab="master">📊 Status</button>
+            <button class="capiau-stab active" data-tab="notes" tabindex="0">📝 Anotações</button>
+            <button class="capiau-stab" data-tab="dragdrop" tabindex="0">🗂️ Ordem</button>
+            <button class="capiau-stab" data-tab="linear" tabindex="0">📋 Linear</button>
+            <button class="capiau-stab" data-tab="master" tabindex="0">📊 Status</button>
         </div>
         <div id="capiau-sidebar-body">
             <div class="capiau-loading">Carregando...</div>
         </div>
     `;
     document.body.appendChild(sidebar);
+
+    // Add device classes to body for CSS targeting
+    applyDeviceClasses();
+}
+
+function applyDeviceClasses() {
+    // Import dynamically to avoid circular deps at init time
+    document.body.classList.toggle('capiau-device-tv', capiauDevice.isTV);
+    document.body.classList.toggle('capiau-device-mobile', capiauDevice.isMobile);
+    document.body.classList.toggle('capiau-device-tablet', capiauDevice.isTablet);
+    document.body.classList.toggle('capiau-device-desktop', capiauDevice.isDesktop);
+    document.body.classList.toggle('capiau-input-touch', capiauDevice.inputMethod === 'touch');
+    document.body.classList.toggle('capiau-input-remote', capiauDevice.inputMethod === 'remote');
+}
+
+function closeSidebar() {
+    sidebarOpen = false;
+    const fab = document.getElementById('capiau-fab');
+    const sidebar = document.getElementById('capiau-sidebar');
+    const overlay = document.getElementById('capiau-overlay');
+    if (fab) fab.classList.remove('is-open');
+    if (sidebar) sidebar.classList.remove('is-open');
+    if (overlay) overlay.classList.remove('is-visible');
+    stopListening();
+}
+
+function openSidebar() {
+    sidebarOpen = true;
+    const fab = document.getElementById('capiau-fab');
+    const sidebar = document.getElementById('capiau-sidebar');
+    const overlay = document.getElementById('capiau-overlay');
+    if (fab) fab.classList.add('is-open');
+    if (sidebar) sidebar.classList.add('is-open');
+    if (overlay && (capiauDevice.isMobile || capiauDevice.isTablet)) {
+        overlay.classList.add('is-visible');
+    }
+    loadSidebarData();
+    
+    // TV: Auto-focus first tab
+    if (capiauDevice.isTV) {
+        setTimeout(() => {
+            const firstTab = document.querySelector('.capiau-stab.active');
+            if (firstTab) firstTab.focus();
+        }, 350);
+    }
 }
 
 function bindToggle() {
     const fab = document.getElementById('capiau-fab');
-    const sidebar = document.getElementById('capiau-sidebar');
     const closeBtn = document.getElementById('capiau-sidebar-close');
+    const overlay = document.getElementById('capiau-overlay');
 
     fab.addEventListener('click', () => {
-        sidebarOpen = !sidebarOpen;
-        fab.classList.toggle('is-open', sidebarOpen);
-        sidebar.classList.toggle('is-open', sidebarOpen);
-
         if (sidebarOpen) {
-            loadSidebarData();
+            closeSidebar();
         } else {
-            stopListening();
+            openSidebar();
         }
     });
 
-    closeBtn.addEventListener('click', () => {
-        sidebarOpen = false;
-        fab.classList.remove('is-open');
-        sidebar.classList.remove('is-open');
-        stopListening();
+    closeBtn.addEventListener('click', () => closeSidebar());
+    
+    // Overlay click closes sidebar (mobile)
+    if (overlay) {
+        overlay.addEventListener('click', () => closeSidebar());
+    }
+
+    // ESC / Back key closes sidebar
+    document.addEventListener('keydown', (e) => {
+        if (!sidebarOpen) return;
+        if (e.key === 'Escape' || e.key === 'GoBack' || e.keyCode === 10009 /* Tizen Back */ || e.keyCode === 461 /* WebOS Back */) {
+            e.preventDefault();
+            e.stopPropagation();
+            closeSidebar();
+        }
     });
 
     const syncBtn = document.getElementById('capiau-btn-collections');
@@ -367,6 +703,57 @@ function bindToggle() {
                 renderSidebar(window.__capiauSidebarData, btn.dataset.tab);
             }
         });
+    });
+}
+
+/**
+ * Touch gestures for mobile bottom-sheet (swipe down to close)
+ */
+function bindTouchGestures() {
+    if (!capiauDevice.hasTouchScreen) return;
+
+    const sidebar = document.getElementById('capiau-sidebar');
+    if (!sidebar) return;
+
+    let startY = 0;
+    let currentY = 0;
+    let isDragging = false;
+
+    const handle = sidebar.querySelector('.capiau-drag-handle');
+    const header = document.getElementById('capiau-sidebar-header');
+    const dragTargets = [handle, header].filter(Boolean);
+
+    dragTargets.forEach(target => {
+        target.addEventListener('touchstart', (e) => {
+            if (!sidebarOpen || !capiauDevice.needsBottomSheet) return;
+            startY = e.touches[0].clientY;
+            isDragging = true;
+            sidebar.style.transition = 'none';
+        }, { passive: true });
+
+        target.addEventListener('touchmove', (e) => {
+            if (!isDragging) return;
+            currentY = e.touches[0].clientY;
+            const deltaY = currentY - startY;
+            if (deltaY > 0) {
+                sidebar.style.transform = `translateY(${deltaY}px)`;
+            }
+        }, { passive: true });
+
+        target.addEventListener('touchend', () => {
+            if (!isDragging) return;
+            isDragging = false;
+            sidebar.style.transition = '';
+            const deltaY = currentY - startY;
+            if (deltaY > 100) {
+                closeSidebar();
+                sidebar.style.transform = '';
+            } else {
+                sidebar.style.transform = '';
+            }
+            startY = 0;
+            currentY = 0;
+        }, { passive: true });
     });
 }
 
@@ -508,7 +895,8 @@ function renderSidebar(data, mode = 'notes') {
         return;
     }
 
-    if (!document.getElementById('capiau-miniplayer-global')) {
+    // Create global miniplayer only on non-TV, non-mobile
+    if (capiauDevice.supportsHover && !document.getElementById('capiau-miniplayer-global')) {
         let globalMiniplayer = document.createElement('div');
         globalMiniplayer.id = 'capiau-miniplayer-global';
         globalMiniplayer.className = 'capiau-miniplayer';
@@ -537,7 +925,7 @@ function renderSidebar(data, mode = 'notes') {
             const cColor = colorMap[statusData.status] || '#ccc';
             const cTitle = titleMap[statusData.status] || 'Desconhecido';
             
-            html += `<div data-mediaid="${mediaId}" class="capiau-note-card" style="border-left: 4px solid ${cColor}; cursor: pointer; display: flex; flex-direction: column;">
+            html += `<div data-mediaid="${mediaId}" class="capiau-note-card" tabindex="0" style="border-left: 4px solid ${cColor}; cursor: pointer; display: flex; flex-direction: column;">
                 <div style="font-size: 13px; font-weight: bold; color: #fff; margin-bottom: 8px;">${name}</div>
                 <div style="font-size: 12px; color: ${cColor}; font-weight: bold; margin-bottom: 10px;">${cTitle}</div>
                 <div style="font-size: 10px; color: #888;">Atualizado por: ${statusData.user || 'Produtor'}</div>
@@ -591,52 +979,53 @@ function renderSidebar(data, mode = 'notes') {
 
     body.innerHTML = html;
 
-    // Hover Miniplayer
-    const globalMiniplayer = document.getElementById('capiau-miniplayer-global');
-    body.querySelectorAll('.capiau-note-card[data-timems]').forEach(card => {
-        let hoverTimeout;
-        
-        card.addEventListener('mouseenter', () => {
-            if (!globalMiniplayer) return;
-            hoverTimeout = setTimeout(() => {
-                const rect = card.getBoundingClientRect();
-                
-                globalMiniplayer.style.top = Math.max(20, rect.top) + 'px';
-                globalMiniplayer.style.left = (rect.left - 250) + 'px'; 
-                globalMiniplayer.style.display = 'block';
-                
-                const timeMs = parseFloat(card.dataset.timems);
-                const startSec = Math.max(0, (timeMs / 1000) - 3);
-                const base = getBaseUrlFallback();
-                
-                globalMiniplayer.innerHTML = '';
-                const video = document.createElement('video');
-                // Use a unique query string to prevent Chrome from pooling the media buffer and bleeding currentTime
-                video.src = `${base}/Videos/${card.dataset.mediaid}/stream.mp4?Static=true&api_key=${getApiKey()}&c=${card.dataset.id}`;
-                video.autoplay = true;
-                video.muted = true;
-                video.loop = true;
-                video.playsInline = true;
-                video.style.cssText = 'width:100%;height:100%;object-fit:cover;';
-                
-                video.addEventListener('loadedmetadata', () => {
-                    if (video.duration >= startSec) {
-                        video.currentTime = startSec;
-                    }
-                });
-                
-                globalMiniplayer.appendChild(video);
-            }, 300);
+    // Hover Miniplayer — ONLY on desktop (not TV, not mobile)
+    if (capiauDevice.supportsHover && capiauDevice.supportsMiniplayer) {
+        const globalMiniplayer = document.getElementById('capiau-miniplayer-global');
+        body.querySelectorAll('.capiau-note-card[data-timems]').forEach(card => {
+            let hoverTimeout;
+            
+            card.addEventListener('mouseenter', () => {
+                if (!globalMiniplayer) return;
+                hoverTimeout = setTimeout(() => {
+                    const rect = card.getBoundingClientRect();
+                    
+                    globalMiniplayer.style.top = Math.max(20, rect.top) + 'px';
+                    globalMiniplayer.style.left = (rect.left - 250) + 'px'; 
+                    globalMiniplayer.style.display = 'block';
+                    
+                    const timeMs = parseFloat(card.dataset.timems);
+                    const startSec = Math.max(0, (timeMs / 1000) - 3);
+                    const base = getBaseUrlFallback();
+                    
+                    globalMiniplayer.innerHTML = '';
+                    const video = document.createElement('video');
+                    video.src = `${base}/Videos/${card.dataset.mediaid}/stream.mp4?Static=true&api_key=${getApiKey()}&c=${card.dataset.id}`;
+                    video.autoplay = true;
+                    video.muted = true;
+                    video.loop = true;
+                    video.playsInline = true;
+                    video.style.cssText = 'width:100%;height:100%;object-fit:cover;';
+                    
+                    video.addEventListener('loadedmetadata', () => {
+                        if (video.duration >= startSec) {
+                            video.currentTime = startSec;
+                        }
+                    });
+                    
+                    globalMiniplayer.appendChild(video);
+                }, 300);
+            });
+            
+            card.addEventListener('mouseleave', () => {
+                clearTimeout(hoverTimeout);
+                if (globalMiniplayer) {
+                    globalMiniplayer.style.display = 'none';
+                    globalMiniplayer.innerHTML = '';
+                }
+            });
         });
-        
-        card.addEventListener('mouseleave', () => {
-            clearTimeout(hoverTimeout);
-            if (globalMiniplayer) {
-                globalMiniplayer.style.display = 'none';
-                globalMiniplayer.innerHTML = '';
-            }
-        });
-    });
+    }
 
     // Submits Replies
     body.querySelectorAll('.capiau-reply-trigger').forEach(btn => {
@@ -696,6 +1085,14 @@ function renderSidebar(data, mode = 'notes') {
                 window.location.hash = `/details?id=${card.dataset.mediaid}`;
             }
         });
+
+        // TV: Enter key acts as click
+        card.addEventListener('keydown', (e) => {
+            if (e.key === 'Enter' || e.key === ' ') {
+                e.preventDefault();
+                card.click();
+            }
+        });
     });
 }
 
@@ -725,21 +1122,21 @@ function noteCardHtml(comment, mediaId) {
     }
 
     return `
-        <div class="capiau-note-card" data-id="${comment.id}" data-mediaid="${mediaId}" data-timems="${timeMs}" style="position:relative;">
+        <div class="capiau-note-card" data-id="${comment.id}" data-mediaid="${mediaId}" data-timems="${timeMs}" style="position:relative;" tabindex="0" role="button" aria-label="Nota em ${timeStr}">
             <div class="capiau-miniplayer hide"></div>
             <div class="capiau-note-badge ${badgeClass}"></div>
             <div style="flex:1;min-width:0;">
                 <div class="capiau-note-text">${comment.comment || '—'}</div>
                 <div class="capiau-note-footer" style="margin-top: 6px;">
                     <span class="capiau-note-author">👤 ${comment.user || 'Anônimo'}</span>
-                    <span class="capiau-note-time">${timeStr}</span>
+                    <span class="capiau-note-time" tabindex="0" role="button">${timeStr}</span>
                 </div>
                 ${repliesHtml}
                 <div style="text-align: right; margin-top: 5px;">
-                    <button class="capiau-reply-trigger">REPLY</button>
+                    <button class="capiau-reply-trigger" tabindex="0">REPLY</button>
                     <div class="capiau-reply-box hide">
                         <textarea placeholder="escreva sua resposta..."></textarea>
-                        <button class="capiau-reply-submit capiau-toggle-btn active">Enviar Resposta</button>
+                        <button class="capiau-reply-submit capiau-toggle-btn active" tabindex="0">Enviar Resposta</button>
                     </div>
                 </div>
             </div>

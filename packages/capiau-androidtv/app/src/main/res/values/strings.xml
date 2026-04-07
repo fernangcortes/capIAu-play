@@ -1,0 +1,14 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="app_name">CapIAu Streaming</string>
+    <string name="producer_mode">Modo Produtora</string>
+    <string name="organize">Organizar Coleções</string>
+    <string name="server_setup">Configurar Servidor</string>
+    <string name="server_url_hint">URL do Jellyfin (ex: http://192.168.1.100:8096)</string>
+    <string name="username_hint">Usuário</string>
+    <string name="password_hint">Senha</string>
+    <string name="connect">Conectar</string>
+    <string name="connecting">Conectando…</string>
+    <string name="error_connection">Não foi possível conectar ao servidor</string>
+    <string name="error_auth">Usuário ou senha incorretos</string>
+</resources>

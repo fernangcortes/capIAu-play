@@ -1,0 +1,95 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:orientation="vertical"
+    android:gravity="center"
+    android:padding="80dp"
+    android:background="@color/capiau_dark">
+
+    <!-- Logo / Title -->
+    <TextView
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="🎬 CapIAu Streaming"
+        android:textSize="32sp"
+        android:textColor="@color/capiau_red"
+        android:textStyle="bold"
+        android:layout_marginBottom="16dp" />
+
+    <TextView
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="Conecte ao seu servidor Jellyfin"
+        android:textSize="16sp"
+        android:textColor="@color/capiau_text_secondary"
+        android:layout_marginBottom="48dp" />
+
+    <!-- Server URL -->
+    <EditText
+        android:id="@+id/input_server_url"
+        android:layout_width="480dp"
+        android:layout_height="56dp"
+        android:hint="@string/server_url_hint"
+        android:inputType="textUri"
+        android:textColor="@color/capiau_text_primary"
+        android:textColorHint="@color/capiau_text_secondary"
+        android:background="@color/capiau_dark_surface"
+        android:padding="16dp"
+        android:textSize="16sp"
+        android:layout_marginBottom="12dp"
+        android:focusable="true"
+        android:nextFocusDown="@+id/input_username" />
+
+    <!-- Username -->
+    <EditText
+        android:id="@+id/input_username"
+        android:layout_width="480dp"
+        android:layout_height="56dp"
+        android:hint="@string/username_hint"
+        android:inputType="text"
+        android:textColor="@color/capiau_text_primary"
+        android:textColorHint="@color/capiau_text_secondary"
+        android:background="@color/capiau_dark_surface"
+        android:padding="16dp"
+        android:textSize="16sp"
+        android:layout_marginBottom="12dp"
+        android:focusable="true"
+        android:nextFocusDown="@+id/input_password" />
+
+    <!-- Password -->
+    <EditText
+        android:id="@+id/input_password"
+        android:layout_width="480dp"
+        android:layout_height="56dp"
+        android:hint="@string/password_hint"
+        android:inputType="textPassword"
+        android:textColor="@color/capiau_text_primary"
+        android:textColorHint="@color/capiau_text_secondary"
+        android:background="@color/capiau_dark_surface"
+        android:padding="16dp"
+        android:textSize="16sp"
+        android:layout_marginBottom="24dp"
+        android:focusable="true"
+        android:nextFocusDown="@+id/btn_connect" />
+
+    <!-- Connect Button -->
+    <Button
+        android:id="@+id/btn_connect"
+        android:layout_width="480dp"
+        android:layout_height="56dp"
+        android:text="@string/connect"
+        android:textSize="18sp"
+        android:textColor="@color/capiau_text_primary"
+        android:backgroundTint="@color/capiau_red"
+        android:focusable="true" />
+
+    <!-- Status Text -->
+    <TextView
+        android:id="@+id/status_text"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:textColor="@color/capiau_text_secondary"
+        android:textSize="14sp"
+        android:layout_marginTop="16dp" />
+</LinearLayout>

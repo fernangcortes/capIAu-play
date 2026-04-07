@@ -1,16 +1,16 @@
 // CapIAu-Streaming - Firebase Engine
 import { initializeApp } from 'firebase/app';
-import { getFirestore, collection, addDoc, getDocs, onSnapshot, query, where, orderBy, doc, deleteDoc, updateDoc } from 'firebase/firestore';
+import { getFirestore, collection, addDoc, getDocs, getDoc, setDoc, onSnapshot, query, where, orderBy, doc, deleteDoc, updateDoc, serverTimestamp } from 'firebase/firestore';
 
-// ⚠️ REQUIRED: O usuário deve substituir estas chaves pelas suas do Firebase Console
+// ⚠️ Configuradas por variáveis de ambiente (Vercel ou .env)
 const firebaseConfig = {
-  apiKey: "AIzaSyAyPThuxd0QAk3zVrHmxmk3k3eVA88vZ60",
-  authDomain: "capiau-streaming.firebaseapp.com",
-  projectId: "capiau-streaming",
-  storageBucket: "capiau-streaming.firebasestorage.app",
-  messagingSenderId: "187412158747",
-  appId: "1:187412158747:web:2b7dcad619651bfdde1bbe",
-  measurementId: "G-BP230KYGPD"
+  apiKey: process.env.FIREBASE_API_KEY,
+  authDomain: process.env.FIREBASE_AUTH_DOMAIN,
+  projectId: process.env.FIREBASE_PROJECT_ID,
+  storageBucket: process.env.FIREBASE_STORAGE_BUCKET,
+  messagingSenderId: process.env.FIREBASE_MESSAGING_SENDER_ID,
+  appId: process.env.FIREBASE_APP_ID,
+  measurementId: process.env.FIREBASE_MEASUREMENT_ID
 };
 
 let app;
@@ -24,4 +24,4 @@ try {
   console.error("🔥 CapIAu Firebase Error:", error);
 }
 
-export { db, collection, addDoc, getDocs, onSnapshot, query, where, orderBy, doc, deleteDoc, updateDoc };
+export { db, collection, addDoc, getDocs, getDoc, setDoc, onSnapshot, query, where, orderBy, doc, deleteDoc, updateDoc, serverTimestamp };

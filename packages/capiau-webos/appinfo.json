@@ -1,0 +1,15 @@
+{
+    "id": "com.capiau.streaming",
+    "version": "1.0.0",
+    "vendor": "CapIAu",
+    "type": "web",
+    "main": "index.html",
+    "title": "CapIAu Streaming",
+    "icon": "icon.png",
+    "largeIcon": "largeIcon.png",
+    "iconColor": "#0d0d0d",
+    "resolution": "1920x1080",
+    "bgColor": "#000000",
+    "disableBackHistoryAPI": false,
+    "handlesRelaunch": true
+}

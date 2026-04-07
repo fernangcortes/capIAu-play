@@ -1,0 +1,70 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>CapIAu Streaming</title>
+    <style>
+        body, html {
+            margin: 0;
+            padding: 0;
+            width: 100%;
+            height: 100%;
+            overflow: hidden;
+            background: #000;
+        }
+    </style>
+    <!-- WebOS TV library -->
+    <script src="webOSTVjs-1.2.10/webOSTV.js"></script>
+    <script src="webOSTVjs-1.2.10/webOSTV-dev.js"></script>
+</head>
+<body>
+    <script src="webos/webos-bridge.js"></script>
+    <script>
+        // CapIAu WebOS Entry Point
+
+        // Handle LG Magic Remote back button
+        document.addEventListener('keydown', function(e) {
+            if (e.keyCode === 461) { // WebOS Back key
+                // Let the CapIAu sidebar handle it first
+                var sidebar = document.getElementById('capiau-sidebar');
+                if (sidebar && sidebar.classList.contains('is-open')) {
+                    return; // capiauSidebar.js handles this
+                }
+
+                // Otherwise, navigate back or hide app
+                if (window.history.length > 1) {
+                    window.history.back();
+                } else {
+                    // On LG, back on root minimizes the app (doesn't exit)
+                    if (window.webOS) {
+                        webOS.platformBack();
+                    }
+                }
+            }
+        });
+
+        // Handle visibility changes
+        document.addEventListener('webOSRelaunch', function(e) {
+            console.log('[CapIAu WebOS] App relaunched');
+            if (window.ApiClient) {
+                window.ApiClient.ensureWebSocket();
+            }
+        });
+
+        document.addEventListener('visibilitychange', function() {
+            if (document.hidden) {
+                console.log('[CapIAu WebOS] App backgrounded');
+            } else {
+                console.log('[CapIAu WebOS] App foregrounded');
+                if (window.ApiClient) {
+                    window.ApiClient.ensureWebSocket();
+                }
+            }
+        });
+
+        // Load the CapIAu web app
+        window.location.href = 'www/index.html';
+    </script>
+</body>
+</html>

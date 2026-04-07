@@ -24,6 +24,7 @@ import { pageClassOn, serverAddress } from './utils/dashboard';
 import Events from './utils/events';
 import RootApp from './RootApp';
 import { initCapIAuSidebar } from './scripts/capiau/capiauSidebar';
+import { startSyncListener, migrateLocalStorageToFirebase } from './scripts/capiau/capiauSync';
 
 // Import the button webcomponent for use throughout the site
 // NOTE: This is a bit of a hack, files should ensure the component is imported before use
@@ -115,6 +116,13 @@ build: ${__JF_BUILD_VERSION__}`);
 
     // Init CapIAu Global Sidebar
     initCapIAuSidebar();
+
+    // Init CapIAu Multi-Device Sync (Firebase → localStorage real-time bridge)
+    startSyncListener((entityId, orderedList, deviceOrigin) => {
+        console.debug(`[CapIAu] Remote sync update: ${entityId} from ${deviceOrigin}`);
+    });
+    // One-time migration of existing localStorage orders → Firebase
+    migrateLocalStorageToFirebase();
 
     // Load platform specific features
     loadPlatformFeatures();

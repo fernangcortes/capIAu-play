@@ -3,6 +3,7 @@ import layoutManager from '../../components/layoutManager';
 import { appRouter } from '../../components/router/appRouter';
 import { getPortraitShape } from '../../components/cardbuilder/utils/shape';
 import { applyCustomOrder, getCarouselOrder } from './capiauDragDrop';
+import { capiauDevice } from './capiauDeviceManager';
 
 export async function injectHomeSections(parentContainer, apiClient) {
     try {
@@ -85,24 +86,26 @@ export async function injectHomeSections(parentContainer, apiClient) {
                 };
 
                 itemsContainer.getItemsHtml = function(items) {
-                    // CapIAu: Apply custom order from localStorage
-                    const ordered = applyCustomOrder(collectionId, items).slice(0, 20); // Retorna só os 20 primeiros já ordenados
+                    // CapIAu: Adaptive limits per device
+                    const itemLimit = capiauDevice.isMobile ? 10 : capiauDevice.isTV ? 25 : 20;
+                    const ordered = applyCustomOrder(collectionId, items).slice(0, itemLimit);
+
                     return cardBuilder.getCardsHtml({
                         items: ordered,
                         shape: getPortraitShape(true),
-                        preferThumb: 'auto',
+                        preferThumb: capiauDevice.isMobile ? true : 'auto',
                         showUnplayedIndicator: false,
                         showChildCountIndicator: false,
                         context: 'home',
                         overlayText: false,
                         centerText: true,
                         overlayPlayButton: true,
-                        allowBottomPadding: false,
+                        allowBottomPadding: !capiauDevice.isMobile,
                         cardLayout: false,
                         showTitle: true,
-                        showYear: true,
+                        showYear: !capiauDevice.isMobile,
                         showParentTitle: false,
-                        lines: 2
+                        lines: capiauDevice.isMobile ? 1 : 2
                     });
                 };
                 itemsContainer.parentContainer = frag;

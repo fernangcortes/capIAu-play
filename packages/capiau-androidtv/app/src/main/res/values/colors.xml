@@ -1,0 +1,12 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <color name="capiau_red">#E50914</color>
+    <color name="capiau_dark">#0D0D0D</color>
+    <color name="capiau_dark_surface">#1A1A1A</color>
+    <color name="capiau_dark_card">#222222</color>
+    <color name="capiau_text_primary">#FFFFFF</color>
+    <color name="capiau_text_secondary">#AAAAAA</color>
+    <color name="capiau_accent">#E50914</color>
+    <color name="capiau_focus_ring">#FFE50914</color>
+    <color name="capiau_green">#2ECC71</color>
+</resources>
