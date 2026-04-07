@@ -1,104 +1,94 @@
 # 🎬 CapIAu-Streaming
 
-> Fork customizado do **Jellyfin-Web** com propósito duplo: plataforma de **entretenimento** (Netflix-like) e **ferramenta de revisão profissional** para produtoras (Frame.io-like).
+![Jellyfin Fork](https://img.shields.io/badge/Fork-Jellyfin--Web-blue?style=for-the-badge&logo=jellyfin) ![JavaScript](https://img.shields.io/badge/JavaScript-F7DF1E?style=for-the-badge&logo=javascript&logoColor=black) ![React](https://img.shields.io/badge/React-20232A?style=for-the-badge&logo=react&logoColor=61DAFB) ![Supabase/Firebase](https://img.shields.io/badge/Firebase/Supabase-DB-orange?style=for-the-badge)
 
-## 🏗️ Arquitetura
+O **CapIAu-Streaming** é um fork massivamente modificado do projeto open-source **[Jellyfin-Web](https://github.com/jellyfin/jellyfin-web)**, desenvolvido com uma premissa ousada de propósito duplo: atuar como uma plataforma premium de **Entretenimento (Estilo Netflix)** e ao mesmo tempo como um **Ecossistema de Revisão Profissional para Produtoras de Vídeo (Estilo Frame.io)**.
 
-O projeto é composto por:
+Este repositório contém a versão customizada do Frontend, contendo todas as integrações de metadados, controle de playback em tela cheia e ferramentas analíticas e da "Produtora".
 
-1. **Jellyfin Server** — Backend de mídia (instalação nativa Windows)
-2. **Jellyfin-Web Fork** — Frontend customizado com player profissional
-3. **Servarr Stack** — Automação de mídia (Radarr, Sonarr, Prowlarr, Bazarr, etc.)
-4. **Scripts de Automação** — FFmpeg pipelines, Whisper AI, metadata extraction
-
-## 📁 Estrutura do Projeto
-
-```
-CapIAu-Streaming/
-├── jellyfin-web/              # Fork do jellyfin-web (submodule)
-│   └── src/
-│       ├── apps/stable/       # App principal (foco das alterações)
-│       ├── components/        # Componentes reutilizáveis
-│       ├── plugins/           # Plugins client-side customizados
-│       └── scripts/           # Lógica de negócio
-├── scripts/                   # Scripts de automação
-│   ├── proxy-generator.sh     # Geração de proxies FFmpeg
-│   ├── timecode-burnin.sh     # Burn-in de timecode
-│   ├── whisper-subtitles.py   # Legendas automáticas (Whisper AI)
-│   └── thumbnail-generator.py # Thumbnails inteligentes
-├── config/                    # Configurações dos serviços
-│   ├── jellyfin/
-│   ├── radarr/
-│   ├── sonarr/
-│   ├── prowlarr/
-│   ├── bazarr/
-│   ├── tdarr/
-│   └── nginx/
-└── docs/                      # Documentação
-    ├── ARCHITECTURE.md
-    ├── SETUP.md
-    └── FEATURES.md
-```
-
-## 🚀 Quick Start
-
-### Pré-requisitos
-- [Node.js](https://nodejs.org/) v18+ (atual: v24.12.0)
-- [Git](https://git-scm.com/) v2.50+
-- [Jellyfin Server](https://jellyfin.org/downloads/) (Windows)
-- [Python 3.10+](https://python.org/) (para scripts de IA)
-- [FFmpeg](https://ffmpeg.org/) (para processamento de vídeo)
-
-### Desenvolvimento do Frontend
-
-```bash
-# 1. Clonar o repositório
-git clone <repo-url>
-cd CapIAu-Streaming
-
-# 2. Entrar no fork do jellyfin-web
-cd jellyfin-web
-
-# 3. Instalar dependências
-npm install
-
-# 4. Iniciar dev server (aponta para Jellyfin local em :8096)
-npm start
-# → Abre em http://localhost:8080
-```
-
-### Stack Servarr (Instalação Nativa Windows)
-
-| Serviço | Porta | Função |
-|---------|-------|--------|
-| Jellyfin | 8096 | Servidor de mídia |
-| Radarr | 7878 | Gerenciador de filmes |
-| Sonarr | 8989 | Gerenciador de séries |
-| Prowlarr | 9696 | Hub de indexers |
-| Bazarr | 6767 | Legendas automáticas |
-| Jellyseerr | 5055 | Portal de requisições |
-| Tdarr | 8265 | Transcoding automático |
-| Jellystat | 3000 | Estatísticas de uso |
+---
 
 ## 🎯 Modos de Operação
 
-### 🍿 Modo Cinema (Entretenimento)
-- Interface Netflix-like
-- Auto-skip para próximo episódio
-- Carrossel de preview no hover
-- Legendas automáticas (Whisper AI)
-- Download/organização automatizada (Servarr)
+### 🍿 1. Modo Cinema (Entretenimento)
+Desenvolvido para consumo na mesa ou sofá da sua sala. Tudo foi pensado para aprimorar a usabilidade padrão do Jellyfin:
+* Interface polida focada em visualização moderna.
+* Geração de **Auto-Coleções Injetadas** (Ex: *Acervo: Comédia*, *Obras da Década*) construídas sob metadados e injetadas de forma invisível nos carrosséis da tela inicial.
+* Script de retifica das mídias (**NFO Generator**) para auto-agrupar vídeos picados em cursos/séries perfeitas simulando episódios, com um simples clique via console.
 
-### 🎥 Modo Produtora (Profissional)
-- Player com avanço frame-a-frame
-- Timecode SMPTE (HH:MM:SS:FF)
-- Comentários por timecode (estilo Frame.io)
-- Anotações/desenho na tela
-- Versionamento de cortes (V1, V2, Final)
-- Marca d'água forense dinâmica
-- Aprovação de cortes (Aprovado/Requer Alterações/Rejeitado)
-- Links temporários com NDA
+### 🎥 2. Modo Produtora (Revisão e Dailies)
+Desenvolvido para diretores, editores de vídeo e coloristas:
+* **Painel da Produtora:** Uma barra lateral ativável (`/experimental/home`) que fornece dados atrelados diretamente ao timestamp (Timecode) dos vídeos no player.
+* Integração de anotações (Post-Its) em nuvem via **Firebase (Firestore)** e/ou **Supabase**, desenhado com resposta em tempo real.
+* **Smart Mini-Player Global:** Permite o usuário assistir e pular direto para o "minuto 10 onde precisa arrumar o CGI da cena", acoplado com uma travessia contínua sem que a página perca o cache do vídeo em buffer.
+
+---
+
+## 🔥 Principais Funcionalidades (`Features Exclusivas CapIAu`)
+
+### Editor de Ordem Manual (Drag & Drop) `[NOVO]`
+O Jellyfin falha historicamente na reordenação manual de BoxSets e Coleções, já que se apoia somente no SQLite interno ou nome de arquivo. O **CapIAu-Organizer Engine** cria um painel front-end poderoso:
+1. Reordene a sequência dos Carrosséis da Tela Inicial arrastando-os pelo mouse.
+2. Reordene os filmes inseridos **DENTRO** desses carrosséis sem estressar as queries do servidor.
+3. Toda manipulação é 100% interceptada antes do _render_ do React/Jellyfin usando o poderoso `localStorage` e a função de _bypassing_ atômica.
+
+### CapIAu NFO-Generator (`capiau-nfo-generator.js`)
+Trabalha integrado à pasta raiz ou downloads. Lançado via Node, escaneia seu servidor local por hierarquias de pastas desestruturadas e injeta arquivos XML de TVShows / Seasons / Episodes automaticamente em pastas compostas de "Aulas", "Clipes" e "Behind the Scenes" sem necessidade do Sonarr.
+
+### Injetor de Home Sections Dinâmico
+Comanda toda a tela inicial principal. Lê marcadores analíticos, limpa lixo visual de coleções abandonadas, reordena através das preferências do *Drag & Drop Engine* e injeta as famosas galerias verticais com limites escaláveis de fetch da API para fluidez massiva do site.
+
+---
+
+## 🏗️ Estrutura do Projeto & Modificações Importantes
+
+Os maiores núcleos do Capiroto Streaming residem nos diretórios abaixo dentro do diretório `/jellyfin-web/`:
+
+* `src/scripts/capiau/` → Nossa pasta canônica contendo:
+  * `capiauDragDrop.js` (O drag and drop via localStorage)
+  * `capiauHomeInjector.js` (Interceptor de carrosséis da Home)
+  * `capiauSidebar.js` (A UI flutuante da Produtora)
+* `src/controllers/playback/` e `src/controllers/itemDetails/` → Telas centrais do Jellyfin que sofreram _injections_ (`.slice(0, 20)`, manipulação de cache-busting do DOM, links de reprodução exata).
+
+Você também encontrará pastas auxiliares na raiz do repo:
+* `/docs/` → Arquitetura e histórico granular de Features.
+* `/config/` → Stack `.yml` pré prontas conectando a Suite Servarr (Sonarr, Radarr, Prowlarr) para infraestrutura on-premises.
+
+---
+
+## 🚀 Como Iniciar (Quick Start)
+
+### Pré-requisitos Básicos
+- Servidor Jellyfin (Local ou Remoto, preferencialmente rodando na porta padrão `8096`).
+- **Node.js** V18+ para manipulação do Frontend.
+
+### Instalação (Ambiente Dev)
+
+1. Clone o repositório na sua máquina
+```bash
+git clone https://github.com/SeuUsuario/CapIAu-Streaming.git
+cd CapIAu-Streaming/jellyfin-web
+```
+
+2. Instale as dependências robustas herdadas do Jellyfin original
+```bash
+npm install
+```
+
+3. Gire o servidor de Desenvolvimento do Webpack apontando o proxy para seu server Jelly local.
+```bash
+npm start
+```
+A build subirá no endereço padrão: `http://localhost:8080/`.
+
+*(Para subir arquivos NFO usando a automação: Vá até a raiz e rode `node capiau-nfo-generator.js "X:\Caminho\das\Mídias"`)*
+
+---
+
+## 🤝 Colaboradores & Autores
+
+Construído pelo Time do **Projeto CapIAu**, unificando automações Node, Javascript, integrações com o SDK do Firebase Firestore, e engenharia reversa no framework legado da web-app oficial da Jellyfin.
 
 ## 📄 Licença
 
-Baseado no [Jellyfin](https://github.com/jellyfin/jellyfin-web) — GNU GPL v2.
+Por se tratar de um fork massivo e restrito, toda integração gerada no ambiente da equipe rege-se sob as origens **GNU GPL v2** do [Projeto Oficial da Jellyfin](https://github.com/jellyfin/jellyfin-web).
