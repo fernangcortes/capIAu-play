@@ -7,6 +7,26 @@
     </div>
     <div class="upNextContainer hide"></div>
 
+    <!-- CapIAu Safe Margins Overlay -->
+    <div id="capiauSafeMargins" class="capiau-safe-margins-overlay hide">
+        <div class="capiau-guide capiau-guide-4-3">
+            <span class="capiau-guide-title">4:3 TV</span>
+        </div>
+        <div class="capiau-guide capiau-guide-9-16">
+            <span class="capiau-guide-title" style="color: #ff3b3b;">9:16 Social</span>
+        </div>
+        <div class="capiau-guide capiau-guide-2-35">
+            <span class="capiau-guide-title">2.35:1 Scope</span>
+        </div>
+    </div>
+
+    <!-- CapIAu Network Alert -->
+    <div id="capiauNetworkAlert" class="capiau-network-alert hide">
+        <span class="material-icons warning" style="color: #ff9800; margin-right: 8px;"></span>
+        <span>Conexão Instável. O vídeo está engasgando...</span>
+        <button id="btnCapIauForceProxy" class="capiau-btn-proxy">Usar Versão Leve (Proxy)</button>
+    </div>
+
     <!-- CapIAu Firebase Chat Overlay -->
     <div class="capiau-firebase-chat hide" style="position: absolute; right: 20px; top: 15%; width: 350px; background: rgba(20,20,20,0.95); border: 1px solid #444; border-radius: 12px; z-index: 99999; color: white; padding: 15px; display: flex; flex-direction: column; gap: 10px; backdrop-filter: blur(10px); box-shadow: 0 10px 30px rgba(0,0,0,0.8);">
         <div style="display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid #333; padding-bottom: 8px;">
@@ -112,8 +132,11 @@
                 <button is="paper-icon-button-light" class="btnCapIauReview autoSize" title="Painel de Revisão" style="color: #ff3b3b; margin-left: 5px;">
                     <span class="largePaperIconButton material-icons rate_review" aria-hidden="true"></span>
                 </button>
-                <button is="paper-icon-button-light" class="btnCapIauToggleDots autoSize" title="Mostrar/Ocultar Guias Cênicas" style="color: #ccc; margin-left: 5px;">
-                    <span class="largePaperIconButton material-icons visibility" aria-hidden="true"></span>
+                <button is="paper-icon-button-light" class="btnCapIauToggleMarkers autoSize" title="Mostrar/Ocultar Notas na Timeline" style="color: #ccc; margin-left: 5px;">
+                    <span class="largePaperIconButton material-icons comment" aria-hidden="true"></span>
+                </button>
+                <button is="paper-icon-button-light" class="btnCapIauToggleMargins autoSize" title="Mostrar/Ocultar Guias Cênicas" style="color: #666; margin-left: 5px;">
+                    <span class="largePaperIconButton material-icons visibility_off" aria-hidden="true"></span>
                 </button>
                 <button is="paper-icon-button-light" class="btnAirPlay hide autoSize" title="${AirPlay}">
                     <span class="xlargePaperIconButton material-icons airplay" aria-hidden="true"></span>

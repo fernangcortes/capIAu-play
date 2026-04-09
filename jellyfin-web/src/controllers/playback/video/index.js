@@ -2010,36 +2010,98 @@ export default function (view) {
     view.querySelector('.btnAudio').addEventListener('click', showAudioTrackSelection);
     view.querySelector('.btnSubtitles').addEventListener('click', showSubtitleTrackSelection);
 
+    // --- CapIAu Network Monitor (Anti-Travamento) ---
+    let capiauStallCount = 0;
+    let capiauLastStallTime = 0;
+    const btnForceProxy = view.querySelector('#btnCapIauForceProxy');
+    
+    if (btnForceProxy) {
+        btnForceProxy.addEventListener('click', function(e) {
+            e.stopPropagation();
+            alert("A transição para Proxy será habilitada quando os Servidores Go (Fase 3) estiverem gerando os arquivos de Proxy H.264 ao lado da fonte.");
+            const networkAlert = view.querySelector('#capiauNetworkAlert');
+            if (networkAlert) networkAlert.classList.add('hide');
+        });
+    }
+
+    const capiauNetworkAlertInterval = setInterval(() => {
+        const videoElement = document.querySelector('video');
+        if (videoElement && !videoElement.dataset.capiauHooked) {
+            videoElement.dataset.capiauHooked = "true";
+            const networkAlert = view.querySelector('#capiauNetworkAlert');
+            
+            const handleStall = () => {
+                const now = Date.now();
+                if (now - capiauLastStallTime > 15000) capiauStallCount = 0;
+                capiauStallCount++;
+                capiauLastStallTime = now;
+                
+                if (capiauStallCount >= 2 && networkAlert) {
+                    networkAlert.classList.remove('hide');
+                    setTimeout(() => { networkAlert.classList.add('hide'); }, 8000);
+                    capiauStallCount = 0; // reset
+                }
+            };
+            videoElement.addEventListener('waiting', handleStall);
+            videoElement.addEventListener('stalled', handleStall);
+        }
+    }, 2000);
+
+    view.addEventListener('viewdestroy', function () {
+        clearInterval(capiauNetworkAlertInterval);
+    });
     // --- CapIAu Firebase Collaboration Engine ---
     const chatOverlay = view.querySelector('.capiau-firebase-chat');
     const btnReview = view.querySelector('.btnCapIauReview');
-    const btnToggleDots = view.querySelector('.btnCapIauToggleDots');
+    const btnToggleMargins = view.querySelector('.btnCapIauToggleMargins');
+    const btnToggleMarkers = view.querySelector('.btnCapIauToggleMarkers');
     const btnChatClose = view.querySelector('.capiau-chat-close');
     const btnChatSend = view.querySelector('.capiau-chat-send');
     const chatInput = view.querySelector('.capiau-chat-input');
     const chatMessages = view.querySelector('.capiau-chat-messages');
 
     let firebaseEngine = null;
-    let capiauShowDots = true;
+    let capiauShowMargins = false;
+    let capiauShowMarkers = true;
     let capiauSelectedReplyParent = null; // Guarda o ID do DB de quem estamos respondendo
 
-    if (btnToggleDots) {
-        btnToggleDots.addEventListener('click', function(e) {
+    if (btnToggleMargins) {
+        btnToggleMargins.addEventListener('click', function(e) {
             e.stopPropagation();
-            capiauShowDots = !capiauShowDots;
-            const spanIcon = btnToggleDots.querySelector('span');
-            if (capiauShowDots) {
+            capiauShowMargins = !capiauShowMargins;
+            const spanIcon = btnToggleMargins.querySelector('span');
+            if (capiauShowMargins) {
                 spanIcon.classList.remove('visibility_off');
                 spanIcon.classList.add('visibility');
             } else {
                 spanIcon.classList.remove('visibility');
                 spanIcon.classList.add('visibility_off');
             }
-            btnToggleDots.style.color = capiauShowDots ? '#ccc' : '#666';
+            btnToggleMargins.style.color = capiauShowMargins ? '#ccc' : '#666';
+            
+            const capiauSafeMargins = view.querySelector('#capiauSafeMargins');
+            if (capiauSafeMargins) {
+                if (capiauShowMargins) {
+                    capiauSafeMargins.classList.remove('hide');
+                } else {
+                    capiauSafeMargins.classList.add('hide');
+                }
+            }
+        });
+    }
+
+    if (btnToggleMarkers) {
+        btnToggleMarkers.addEventListener('click', function(e) {
+            e.stopPropagation();
+            capiauShowMarkers = !capiauShowMarkers;
+            const spanIcon = btnToggleMarkers.querySelector('span');
+            
+            // Re-use same icon, just fade the button color to indicate it's off
+            btnToggleMarkers.style.color = capiauShowMarkers ? '#ccc' : '#666';
             
             const sliderMarkerContainer = view.querySelector('.sliderMarkerContainer');
             if (sliderMarkerContainer) {
-                sliderMarkerContainer.style.display = capiauShowDots ? 'block' : 'none';
+                sliderMarkerContainer.style.display = capiauShowMarkers ? 'block' : 'none';
             }
         });
     }

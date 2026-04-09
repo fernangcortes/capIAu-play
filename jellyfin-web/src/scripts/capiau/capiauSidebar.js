@@ -18,6 +18,21 @@ export function initCapIAuSidebar() {
     injectSidebarDOM();
     bindToggle();
     bindTouchGestures();
+    
+    // Initial visibility check
+    updateFabPlaybackState();
+    
+    // Listen for route changes to hide/show FAB automatically
+    window.addEventListener('hashchange', updateFabPlaybackState);
+    window.addEventListener('popstate', updateFabPlaybackState);
+}
+
+/**
+ * Detects if we are currently in a video playback view and toggles a body class
+ */
+function updateFabPlaybackState() {
+    const isVideo = window.location.hash.includes('video');
+    document.body.classList.toggle('capiau-is-video', isVideo);
 }
 
 function injectStyles() {
@@ -55,9 +70,25 @@ function injectStyles() {
         }
         /* Focus indicator for TV */
         #capiau-fab:focus-visible {
-            outline: 3px solid #e50914;
-            outline-offset: 3px;
             box-shadow: 0 0 20px rgba(229,9,20,0.6);
+        }
+
+        /* ===== VIDEO HIDING LOGIC ===== */
+        /* By default, hide FAB during video unless user hovers or it's already open */
+        body.capiau-is-video #capiau-fab {
+            opacity: 0.1; /* Almost invisible but still interactable if they know where it is */
+            transform: scale(0.8);
+            transition: opacity 0.5s, transform 0.3s;
+        }
+        body.capiau-is-video #capiau-fab:hover,
+        body.capiau-is-video #capiau-fab.is-open {
+            opacity: 1;
+            transform: scale(1);
+        }
+        
+        /* User-driven manual toggle — if they want to hide it completely */
+        #capiau-fab.capiau-manual-hide {
+            display: none !important;
         }
 
         /* ===== SIDEBAR PANEL ===== */
@@ -660,6 +691,20 @@ function bindToggle() {
             e.preventDefault();
             e.stopPropagation();
             closeSidebar();
+        }
+    });
+
+    // Keyboard shortcut for manual toggle (Alt+P) - "Only appear if the user wants"
+    document.addEventListener('keydown', (e) => {
+        if (e.altKey && (e.key === 'p' || e.key === 'P')) {
+            e.preventDefault();
+            const fab = document.getElementById('capiau-fab');
+            if (fab) {
+                const isHidden = fab.classList.toggle('capiau-manual-hide');
+                import('../../components/toast/toast').then(({ default: toast }) => {
+                    toast(isHidden ? 'Painel da Produtora Ocultado (Alt+P para mostrar)' : 'Painel da Produtora Visível');
+                });
+            }
         }
     });
 

@@ -341,3 +341,100 @@
         transform: rotate(360deg);
     }
 }
+
+/* CapIAu Safe Margins OSD */
+.capiau-safe-margins-overlay {
+    position: absolute;
+    top: 0; left: 0; bottom: 0; right: 0;
+    pointer-events: none; /* Deixa os cliques passarem pro VideoJS */
+    z-index: 1000;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.capiau-safe-margins-overlay.hide {
+    display: none !important;
+}
+
+.capiau-guide {
+    position: absolute;
+    box-sizing: border-box;
+    display: flex;
+    justify-content: flex-end;
+    align-items: flex-end;
+    padding: 10px;
+}
+
+.capiau-guide-title {
+    color: rgba(255, 255, 255, 0.7);
+    font-size: 1.2em;
+    font-weight: bold;
+    font-family: inherit;
+    text-shadow: 1px 1px 3px rgba(0,0,0,0.8);
+    display: block;
+}
+
+.capiau-guide-4-3 {
+    height: 100%;
+    aspect-ratio: 4 / 3;
+    border: 2px dashed rgba(255, 255, 255, 0.4);
+}
+
+.capiau-guide-9-16 {
+    height: 100%;
+    aspect-ratio: 9 / 16;
+    border: 2px solid rgba(255, 59, 59, 0.5); /* #ff3b3b */
+}
+
+.capiau-guide-2-35 {
+    width: 100%;
+    aspect-ratio: 2.35 / 1;
+    border: 2px dashed rgba(255, 255, 255, 0.4);
+}
+
+.capiau-network-alert {
+    position: absolute;
+    top: 30px;
+    left: 50%;
+    transform: translateX(-50%);
+    background: rgba(20, 20, 20, 0.85);
+    border: 1px solid #ff9800;
+    color: #fff;
+    padding: 12px 24px;
+    border-radius: 8px;
+    z-index: 10000;
+    display: flex;
+    align-items: center;
+    box-shadow: 0 4px 15px rgba(0,0,0,0.5);
+    font-size: 15px;
+    backdrop-filter: blur(10px);
+    transition: opacity 0.5s ease;
+    pointer-events: none;
+}
+
+.capiau-network-alert.hide {
+    display: none !important;
+}
+
+.capiau-btn-proxy {
+    background: #ff9800;
+    color: #000;
+    border: none;
+    padding: 6px 12px;
+    margin-left: 15px;
+    border-radius: 4px;
+    font-weight: bold;
+    cursor: pointer;
+    transition: background 0.2s, transform 0.1s;
+    pointer-events: auto;
+}
+
+.capiau-btn-proxy:hover {
+    background: #ffb74d;
+    transform: scale(1.05);
+}
+
+.capiau-btn-proxy:active {
+    transform: scale(0.95);
+}
